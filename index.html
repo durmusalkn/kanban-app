@@ -241,13 +241,13 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--txt);
 
 <div id="app" style="display:none">
   <div class="topbar">
-    <div class="tb-inner">
-      <div class="tb-logo"><span class="ti ti-layout-kanban"></span></div>
-      <span class="tb-title" id="tbTitle" onclick="openEditBoardSheet()">Kanban</span>
-      <button class="tb-btn edit-btn" onclick="openEditBoardSheet()" aria-label="Board düzenle">
+    <div class="tb-inner" style="gap:6px">
+      <div class="tb-logo" style="flex-shrink:0"><span class="ti ti-layout-kanban"></span></div>
+      <span class="tb-title" id="tbTitle" style="flex:1;min-width:0">Kanban</span>
+      <button class="tb-btn edit-btn" onclick="openEditBoardSheet()" aria-label="Board düzenle" style="flex-shrink:0">
         <span class="ti ti-dots"></span>
       </button>
-      <button class="tb-btn accent" onclick="openCardSheet(null,null)" aria-label="Kart ekle">
+      <button class="tb-btn accent" onclick="openCardSheet(null,null)" aria-label="Kart ekle" style="flex-shrink:0">
         <span class="ti ti-plus"></span>
       </button>
     </div>
