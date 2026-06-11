@@ -540,19 +540,19 @@ function makeCard(card,colId){
   div.addEventListener('dragend',()=>div.classList.remove('dragging'));
 
   // Touch drag — long press activates, then drag ghost follows finger
-  let pressTimer=null, touchDragging=false, ghost=null, startX=0, startY=0;
+  let pressTimer=null, touchDragging=false, ghost=null, startX=0, startY=0, moved=false;
 
   div.addEventListener('touchstart',e=>{
     const t=e.touches[0];
-    startX=t.clientX;startY=t.clientY;
+    startX=t.clientX;startY=t.clientY;moved=false;touchDragging=false;
     pressTimer=setTimeout(()=>{
       pressTimer=null;
+      if(moved)return;
       touchDragging=true;
       dragCardId=card.id;dragFromColId=colId;
       div.classList.add('dragging');
-      // create ghost
       ghost=div.cloneNode(true);
-      ghost.style.cssText=`position:fixed;z-index:999;width:${div.offsetWidth}px;opacity:.9;pointer-events:none;transform:scale(1.05);border:1.5px solid var(--accent);left:${div.getBoundingClientRect().left}px;top:${div.getBoundingClientRect().top}px;transition:none`;
+      ghost.style.cssText=`position:fixed;z-index:999;width:${div.offsetWidth}px;opacity:.9;pointer-events:none;transform:scale(1.05);border:1.5px solid var(--accent);left:${div.getBoundingClientRect().left}px;top:${div.getBoundingClientRect().top}px;transition:none;border-radius:11px`;
       document.body.appendChild(ghost);
     },500);
   },{passive:true});
@@ -561,13 +561,11 @@ function makeCard(card,colId){
     const t=e.touches[0];
     const dx=t.clientX-startX, dy=t.clientY-startY;
     if(!touchDragging){
-      // cancel press if moved too much
-      if(Math.abs(dx)>8||Math.abs(dy)>8){clearTimeout(pressTimer);pressTimer=null}
+      if(Math.abs(dx)>6||Math.abs(dy)>6){moved=true;clearTimeout(pressTimer);pressTimer=null}
       return;
     }
     e.preventDefault();
     if(ghost){ghost.style.left=(t.clientX-div.offsetWidth/2)+'px';ghost.style.top=(t.clientY-40)+'px'}
-    // highlight target col
     document.querySelectorAll('.col-body').forEach(b=>b.classList.remove('drag-over'));
     const el=document.elementFromPoint(t.clientX,t.clientY);
     const targetBody=el?.closest('.col-body');
@@ -579,21 +577,17 @@ function makeCard(card,colId){
     if(ghost){ghost.remove();ghost=null}
     div.classList.remove('dragging');
     document.querySelectorAll('.col-body').forEach(b=>b.classList.remove('drag-over'));
-    if(!touchDragging){
-      // treat as tap → open card
-      openCardSheet(card,colId);
-    }else{
+    if(touchDragging){
       const t=e.changedTouches[0];
       const el=document.elementFromPoint(t.clientX,t.clientY);
       const targetBody=el?.closest('.col-body');
-      if(targetBody){
-        const toColId=targetBody.dataset.cid||[...document.querySelectorAll('.col-body')].find(b=>b.contains(targetBody))?.dataset.cid;
-        const resolvedId=targetBody.dataset.cid;
-        if(resolvedId)dropCard(resolvedId);
-      }
+      if(targetBody?.dataset.cid)dropCard(targetBody.dataset.cid);
+      touchDragging=false;
+      dragCardId=null;dragFromColId=null;
+    } else if(!moved){
+      openCardSheet(card,colId);
     }
-    touchDragging=false;
-    dragCardId=null;dragFromColId=null;
+    moved=false;
   },{passive:true});
 
   const ts=TAGS[card.tag]||TAGS.task;
