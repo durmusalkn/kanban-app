@@ -15,7 +15,7 @@
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 :root{
   --bg:#0d0d14;--s1:#16161f;--s2:#1e1e2a;--s3:#252535;
-  --b1:rgba(255,255,255,0.07);--b2:rgba(255,255,255,0.13);--b3:rgba(255,255,255,0.20);
+  --b1:rgba(255,255,255,0.07);--b2:rgba(255,255,255,0.13);
   --txt:#f0f0f8;--muted:#7878a0;
   --accent:#7c5cfc;--danger:#f05c6a;--ok:#3ecf8e;--warn:#f0a742;
   --safe-top:env(safe-area-inset-top,44px);
@@ -26,24 +26,22 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--txt);
   font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text',sans-serif;
   -webkit-font-smoothing:antialiased}
 
-/* TOPBAR */
 .topbar{position:fixed;top:0;left:0;right:0;z-index:60;
-  padding-top:var(--safe-top);
-  background:rgba(13,13,20,0.96);
+  padding-top:var(--safe-top);background:rgba(13,13,20,0.96);
   border-bottom:.5px solid var(--b1)}
 .tb-inner{display:flex;align-items:center;gap:10px;padding:10px 16px;height:var(--tb)}
 .tb-logo{width:32px;height:32px;border-radius:9px;background:var(--accent);
   display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .tb-logo .ti{font-size:17px;color:#fff}
 .tb-title{font-size:17px;font-weight:700;letter-spacing:-.5px;flex:1;
-  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer}
 .tb-btn{width:36px;height:36px;border-radius:10px;border:none;
   background:var(--s2);color:var(--txt);
   display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0}
 .tb-btn .ti{font-size:19px}
 .tb-btn.accent{background:var(--accent);color:#fff}
+.tb-btn.edit-btn{background:transparent;color:var(--muted)}
 
-/* BOARD TABS */
 .tabs-wrap{position:fixed;z-index:59;left:0;right:0;
   top:calc(var(--safe-top) + var(--tb));height:var(--tabs);
   background:rgba(13,13,20,0.93);border-bottom:.5px solid var(--b1);
@@ -60,7 +58,6 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--txt);
   color:var(--muted);border:.5px dashed var(--b2);flex-shrink:0;
   background:transparent;font-family:inherit}
 
-/* MAIN */
 .main{position:fixed;left:0;right:0;
   top:calc(var(--safe-top) + var(--tb) + var(--tabs));
   bottom:calc(var(--bn) + var(--safe-bot));
@@ -69,7 +66,6 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--txt);
   -webkit-overflow-scrolling:touch;scrollbar-width:none}
 .main::-webkit-scrollbar{display:none}
 
-/* COLUMNS */
 .col{display:flex;flex-direction:column;width:248px;flex-shrink:0;
   border-radius:14px;overflow:hidden;background:var(--s1)}
 .col-hd{display:flex;align-items:center;gap:8px;padding:11px 12px;background:var(--s2)}
@@ -89,7 +85,6 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--txt);
 .col-body::-webkit-scrollbar{display:none}
 .col-body.drag-over{background:rgba(124,92,252,.07)}
 
-/* CARDS */
 .card{background:var(--s2);border:.5px solid var(--b1);border-radius:11px;
   padding:11px;cursor:pointer;position:relative;
   -webkit-user-select:none;user-select:none;transition:transform .1s,opacity .1s}
@@ -120,7 +115,7 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--txt);
   color:var(--muted);font-size:12px;font-weight:600;cursor:pointer;
   width:100%;font-family:inherit}
 .add-card-btn .ti{font-size:15px}
-.add-card-btn:active{border-color:var(--accent);color:var(--accent);background:rgba(124,92,252,.07)}
+.add-card-btn:active{border-color:var(--accent);color:var(--accent)}
 
 .add-col-ghost{display:flex;flex-direction:column;align-items:center;
   justify-content:center;gap:8px;width:190px;flex-shrink:0;min-height:130px;
@@ -130,7 +125,6 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--txt);
 .add-col-ghost .ti{font-size:28px}
 .add-col-ghost:active{border-color:var(--accent);color:var(--accent)}
 
-/* BOTTOM NAV */
 .bnav{position:fixed;bottom:0;left:0;right:0;z-index:60;
   padding-bottom:var(--safe-bot);
   background:rgba(13,13,20,0.96);border-top:.5px solid var(--b1);
@@ -141,7 +135,6 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--txt);
 .nav-it .ti{font-size:23px}
 .nav-it.on{color:var(--accent)}
 
-/* TOAST */
 .toast{position:fixed;bottom:calc(var(--bn) + var(--safe-bot) + 12px);left:50%;
   transform:translateX(-50%) translateY(8px);
   background:var(--s3);border:.5px solid var(--b2);border-radius:10px;
@@ -149,7 +142,6 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--txt);
   opacity:0;transition:opacity .2s,transform .2s;pointer-events:none;z-index:200}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 
-/* SETUP SCREEN */
 .setup-screen{position:fixed;inset:0;background:var(--bg);z-index:300;
   display:flex;flex-direction:column;align-items:center;justify-content:center;
   padding:32px 24px}
@@ -171,7 +163,6 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--txt);
 .setup-btn:active{opacity:.85}
 .setup-err{color:var(--danger);font-size:13px;text-align:center;margin-top:10px;min-height:20px}
 
-/* SHEET */
 .sh-ov{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:100;
   opacity:0;pointer-events:none;transition:opacity .25s}
 .sh-ov.on{opacity:1;pointer-events:all}
@@ -181,8 +172,7 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--txt);
   transform:translateY(102%);transition:transform .3s cubic-bezier(.32,.72,0,1);
   max-height:94vh;overflow-y:auto;-webkit-overflow-scrolling:touch}
 .sheet.on{transform:translateY(0)}
-.sh-handle{width:36px;height:4px;border-radius:2px;
-  background:var(--b2);margin:12px auto 0}
+.sh-handle{width:36px;height:4px;border-radius:2px;background:var(--b2);margin:12px auto 0}
 .sh-title{font-size:17px;font-weight:700;padding:16px 20px 4px;letter-spacing:-.4px;
   display:flex;align-items:center;justify-content:space-between}
 .sh-close{width:28px;height:28px;border-radius:50%;border:none;
@@ -215,10 +205,9 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--txt);
   font-size:15px;font-weight:700;cursor:pointer;font-family:inherit}
 .sh-btn.cancel{background:var(--s3);color:var(--muted)}
 .sh-btn.ok{background:var(--accent);color:#fff}
-.sh-btn.del{background:rgba(240,92,106,.15);color:var(--danger)}
+.sh-btn.del{background:rgba(240,92,106,.15);color:var(--danger);flex:0 0 auto;padding:14px 18px}
 .sh-btn:active{transform:scale(.97)}
 
-/* LOADING */
 .loader{position:fixed;inset:0;background:var(--bg);z-index:400;
   display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px}
 .loader .ti{font-size:40px;color:var(--accent)}
@@ -229,13 +218,11 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--txt);
 </head>
 <body>
 
-<!-- LOADER -->
 <div class="loader" id="loader">
   <span class="ti ti-loader spin"></span>
   <p>Yükleniyor...</p>
 </div>
 
-<!-- SETUP -->
 <div class="setup-screen" id="setupScreen" style="display:none">
   <div class="setup-logo"><span class="ti ti-layout-kanban"></span></div>
   <h1>Kanban'a Hoş Geldiniz</h1>
@@ -252,12 +239,14 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--txt);
   <div class="setup-err" id="setupErr"></div>
 </div>
 
-<!-- APP -->
 <div id="app" style="display:none">
   <div class="topbar">
     <div class="tb-inner">
       <div class="tb-logo"><span class="ti ti-layout-kanban"></span></div>
-      <span class="tb-title" id="tbTitle">Kanban</span>
+      <span class="tb-title" id="tbTitle" onclick="openEditBoardSheet()">Kanban</span>
+      <button class="tb-btn edit-btn" onclick="openEditBoardSheet()" aria-label="Board düzenle">
+        <span class="ti ti-dots"></span>
+      </button>
       <button class="tb-btn accent" onclick="openCardSheet(null,null)" aria-label="Kart ekle">
         <span class="ti ti-plus"></span>
       </button>
@@ -267,14 +256,14 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--txt);
   <div class="main" id="mainArea"></div>
   <div class="bnav">
     <div class="nav-it on"><span class="ti ti-layout-kanban"></span>Board</div>
-    <div class="nav-it" onclick="openBoardSheet()"><span class="ti ti-circle-plus"></span>Board</div>
+    <div class="nav-it" onclick="openNewBoardSheet()"><span class="ti ti-circle-plus"></span>Board</div>
     <div class="nav-it" onclick="openCardSheet(null,null)"><span class="ti ti-square-plus"></span>Kart</div>
   </div>
 </div>
 
 <div class="toast" id="toast"></div>
 
-<!-- SHEETS -->
+<!-- CARD SHEET -->
 <div class="sh-ov" id="cardOv" onclick="closeSheet('cardSh','cardOv')"></div>
 <div class="sheet" id="cardSh">
   <div class="sh-handle"></div>
@@ -305,30 +294,51 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--txt);
   </div>
   <div class="sh-acts">
     <button class="sh-btn del" id="cardDelBtn" onclick="deleteCard()" style="display:none">
-      <span class="ti ti-trash"></span> Sil
+      <span class="ti ti-trash"></span>
     </button>
     <button class="sh-btn cancel" onclick="closeSheet('cardSh','cardOv')">İptal</button>
     <button class="sh-btn ok" onclick="saveCard()">Kaydet</button>
   </div>
 </div>
 
-<div class="sh-ov" id="boardOv" onclick="closeSheet('boardSh','boardOv')"></div>
-<div class="sheet" id="boardSh">
+<!-- NEW BOARD SHEET -->
+<div class="sh-ov" id="newBoardOv" onclick="closeSheet('newBoardSh','newBoardOv')"></div>
+<div class="sheet" id="newBoardSh">
   <div class="sh-handle"></div>
   <div class="sh-title">
     <span>Yeni Board</span>
-    <button class="sh-close" onclick="closeSheet('boardSh','boardOv')"><span class="ti ti-x"></span></button>
+    <button class="sh-close" onclick="closeSheet('newBoardSh','newBoardOv')"><span class="ti ti-x"></span></button>
   </div>
   <div class="sh-body">
     <div class="f"><label>Ad</label><input id="bName" type="text" placeholder="Board adı..."/></div>
     <div class="f"><label>Renk</label><div class="cgrid" id="bColorGrid"></div></div>
   </div>
   <div class="sh-acts">
-    <button class="sh-btn cancel" onclick="closeSheet('boardSh','boardOv')">İptal</button>
-    <button class="sh-btn ok" onclick="saveBoard()">Oluştur</button>
+    <button class="sh-btn cancel" onclick="closeSheet('newBoardSh','newBoardOv')">İptal</button>
+    <button class="sh-btn ok" onclick="saveNewBoard()">Oluştur</button>
   </div>
 </div>
 
+<!-- EDIT BOARD SHEET -->
+<div class="sh-ov" id="editBoardOv" onclick="closeSheet('editBoardSh','editBoardOv')"></div>
+<div class="sheet" id="editBoardSh">
+  <div class="sh-handle"></div>
+  <div class="sh-title">
+    <span>Board Düzenle</span>
+    <button class="sh-close" onclick="closeSheet('editBoardSh','editBoardOv')"><span class="ti ti-x"></span></button>
+  </div>
+  <div class="sh-body">
+    <div class="f"><label>Ad</label><input id="eBName" type="text" placeholder="Board adı..."/></div>
+    <div class="f"><label>Renk</label><div class="cgrid" id="eBColorGrid"></div></div>
+  </div>
+  <div class="sh-acts">
+    <button class="sh-btn del" onclick="deleteBoard()"><span class="ti ti-trash"></span></button>
+    <button class="sh-btn cancel" onclick="closeSheet('editBoardSh','editBoardOv')">İptal</button>
+    <button class="sh-btn ok" onclick="saveEditBoard()">Kaydet</button>
+  </div>
+</div>
+
+<!-- COL SHEET -->
 <div class="sh-ov" id="colOv" onclick="closeSheet('colSh','colOv')"></div>
 <div class="sheet" id="colSh">
   <div class="sh-handle"></div>
@@ -365,18 +375,16 @@ const AV_I=['AY','KM','BS','ÖD','EK','ZY'];
 
 let SB_URL='',SB_KEY='';
 let boards=[],activeBoardId=null;
-let selBoardColor=COLORS[0],selColColor=COLORS[0];
-let editingCardId=null,editingColId=null;
+let selNewBoardColor=COLORS[0],selEditBoardColor=COLORS[0],selColColor=COLORS[0];
+let editingCardId=null;
 let dragCardId=null,dragFromColId=null;
 
 function sbFetch(path,opts={}){
   return fetch(SB_URL+'/rest/v1/'+path,{
     ...opts,
     headers:{
-      'apikey':SB_KEY,
-      'Authorization':'Bearer '+SB_KEY,
-      'Content-Type':'application/json',
-      'Prefer':'return=representation',
+      'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,
+      'Content-Type':'application/json','Prefer':'return=representation',
       ...(opts.headers||{})
     }
   });
@@ -413,9 +421,9 @@ async function showApp(){
 
 async function loadAll(){
   try{
-    const br=await sbFetch('boards?select=*,columns(*,cards(*))&order=position');
-    if(!br.ok)throw new Error();
-    const data=await br.json();
+    const r=await sbFetch('boards?select=*,columns(*,cards(*))&order=position');
+    if(!r.ok)throw new Error();
+    const data=await r.json();
     boards=data.map(b=>({
       ...b,
       cols:(b.columns||[]).sort((a,b2)=>a.position-b2.position).map(c=>({
@@ -423,9 +431,8 @@ async function loadAll(){
         cards:(c.cards||[]).sort((a,b2)=>a.position-b2.position)
       }))
     }));
-    if(!activeBoardId||!boards.find(b=>b.id===activeBoardId)){
+    if(!activeBoardId||!boards.find(b=>b.id===activeBoardId))
       activeBoardId=boards[0]?.id||null;
-    }
     render();
   }catch(e){toast('Veri yüklenemedi',true)}
 }
@@ -446,17 +453,12 @@ function renderTabs(){
     t.className='tab'+(b.id===activeBoardId?' active':'');
     t.innerHTML=`<span class="dot" style="background:${b.color}"></span>${esc(b.name)}`;
     t.onclick=()=>{activeBoardId=b.id;render()};
-    t.addEventListener('contextmenu',e=>{
-      e.preventDefault();
-      if(boards.length>1&&confirm(`"${b.name}" board silinsin mi? Tüm veriler silinir.`))
-        delBoard(b.id);
-    });
     el.appendChild(t);
   });
   const a=document.createElement('button');
   a.className='add-tab';
   a.innerHTML='<span class="ti ti-plus" style="font-size:14px"></span> Board';
-  a.onclick=openBoardSheet;
+  a.onclick=openNewBoardSheet;
   el.appendChild(a);
 }
 
@@ -490,7 +492,6 @@ function makeCol(board,col){
   bar.style.background=col.color;bar.style.opacity='.45';
   const body=document.createElement('div');
   body.className='col-body';
-  body.dataset.cid=col.id;
   body.addEventListener('dragover',e=>{e.preventDefault();body.classList.add('drag-over')});
   body.addEventListener('dragleave',e=>{if(!body.contains(e.relatedTarget))body.classList.remove('drag-over')});
   body.addEventListener('drop',e=>{e.preventDefault();body.classList.remove('drag-over');dropCard(col.id)});
@@ -510,14 +511,10 @@ function makeCard(card,colId){
   div.draggable=true;
   div.addEventListener('dragstart',()=>{dragCardId=card.id;dragFromColId=colId;setTimeout(()=>div.classList.add('dragging'),0)});
   div.addEventListener('dragend',()=>div.classList.remove('dragging'));
-  let pt=null;
-  div.addEventListener('touchstart',()=>{pt=setTimeout(()=>{pt=null;openCardSheet(card,colId)},500)},{passive:true});
-  div.addEventListener('touchend',()=>{if(pt){clearTimeout(pt);pt=null;openCardSheet(card,colId)}},{passive:true});
-  div.addEventListener('touchmove',()=>{clearTimeout(pt);pt=null},{passive:true});
   div.addEventListener('click',()=>openCardSheet(card,colId));
   const ts=TAGS[card.tag]||TAGS.task;
   const pr=PRI[card.priority]||PRI.medium;
-  const av=((card.avatar_index||0))%AV_C.length;
+  const av=(card.avatar_index||0)%AV_C.length;
   const ds=card.due_date?new Date(card.due_date+'T00:00:00').toLocaleDateString('tr-TR',{day:'numeric',month:'short'}):'';
   div.innerHTML=`
     <div class="card-row">
@@ -533,7 +530,7 @@ function makeCard(card,colId){
         </div>
       </div>
       <button class="card-edit-btn" aria-label="Düzenle">
-        <span class="ti ti-dots-vertical"></span>
+        <span class="ti ti-pencil"></span>
       </button>
     </div>`;
   div.querySelector('.card-edit-btn').onclick=e=>{e.stopPropagation();openCardSheet(card,colId)};
@@ -562,7 +559,6 @@ async function dropCard(toColId){
 
 function openCardSheet(card,colId){
   editingCardId=card?.id||null;
-  editingColId=colId;
   document.getElementById('cardShTitle').textContent=card?'Kartı Düzenle':'Yeni Kart';
   document.getElementById('cTitle').value=card?.title||'';
   document.getElementById('cDesc').value=card?.description||'';
@@ -585,32 +581,35 @@ function openCardSheet(card,colId){
 
 async function saveCard(){
   const title=document.getElementById('cTitle').value.trim();
-  if(!title)return;
+  if(!title){toast('Başlık boş olamaz',true);return}
   const colId=document.getElementById('cCol').value;
   const payload={
     title,
-    description:document.getElementById('cDesc').value.trim()||null,
     tag:getSegVal('tagSeg'),
     priority:getSegVal('priSeg'),
     due_date:document.getElementById('cDate').value||null,
     column_id:colId,
     updated_at:new Date().toISOString()
   };
+  const desc=document.getElementById('cDesc').value.trim();
+  if(desc)payload.description=desc;
   closeSheet('cardSh','cardOv');
   try{
     if(editingCardId){
-      await sbFetch('cards?id=eq.'+editingCardId,{method:'PATCH',body:JSON.stringify(payload)});
+      const r=await sbFetch('cards?id=eq.'+editingCardId,{method:'PATCH',body:JSON.stringify(payload)});
+      if(!r.ok)throw new Error();
       toast('Kart güncellendi');
     }else{
       const b=getActive();
       const col=b.cols.find(c=>c.id===colId);
-      payload.position=(col?.cards.length||0);
+      payload.position=col?.cards.length||0;
       payload.avatar_index=Math.floor(Math.random()*AV_C.length);
-      await sbFetch('cards',{method:'POST',body:JSON.stringify(payload)});
+      const r=await sbFetch('cards',{method:'POST',body:JSON.stringify(payload)});
+      if(!r.ok){const e=await r.json();throw new Error(JSON.stringify(e))}
       toast('Kart eklendi');
     }
     await loadAll();
-  }catch(e){toast('Kaydedilemedi',true)}
+  }catch(e){toast('Kaydedilemedi: '+e.message,true)}
 }
 
 async function deleteCard(){
@@ -619,8 +618,7 @@ async function deleteCard(){
   closeSheet('cardSh','cardOv');
   try{
     await sbFetch('cards?id=eq.'+editingCardId,{method:'DELETE'});
-    toast('Kart silindi');
-    await loadAll();
+    toast('Kart silindi');await loadAll();
   }catch(e){toast('Silinemedi',true)}
 }
 
@@ -632,28 +630,22 @@ async function delCol(colId){
   }catch(e){toast('Silinemedi',true)}
 }
 
-async function delBoard(id){
-  try{
-    await sbFetch('boards?id=eq.'+id,{method:'DELETE'});
-    if(activeBoardId===id)activeBoardId=null;
-    await loadAll();
-  }catch(e){toast('Silinemedi',true)}
-}
-
-function openBoardSheet(){
-  selBoardColor=COLORS[0];buildCGrid('bColorGrid','board');
+function openNewBoardSheet(){
+  selNewBoardColor=COLORS[0];
+  buildCGrid('bColorGrid','new');
   document.getElementById('bName').value='';
-  openSheet('boardSh','boardOv');
+  openSheet('newBoardSh','newBoardOv');
   setTimeout(()=>document.getElementById('bName').focus(),350);
 }
 
-async function saveBoard(){
+async function saveNewBoard(){
   const name=document.getElementById('bName').value.trim();
   if(!name)return;
-  closeSheet('boardSh','boardOv');
+  closeSheet('newBoardSh','newBoardOv');
   try{
-    const r=await sbFetch('boards',{method:'POST',body:JSON.stringify({name,color:selBoardColor,position:boards.length})});
-    const [nb]=await r.json();
+    const r=await sbFetch('boards',{method:'POST',body:JSON.stringify({name,color:selNewBoardColor,position:boards.length})});
+    if(!r.ok)throw new Error();
+    const[nb]=await r.json();
     const defCols=[
       {name:'Yapılacak',color:'#7878a0',position:0},
       {name:'Devam Ediyor',color:'#4f9cf9',position:1},
@@ -661,9 +653,39 @@ async function saveBoard(){
     ];
     for(const c of defCols)await sbFetch('columns',{method:'POST',body:JSON.stringify({...c,board_id:nb.id})});
     activeBoardId=nb.id;
-    await loadAll();
-    toast('Board oluşturuldu');
+    await loadAll();toast('Board oluşturuldu');
   }catch(e){toast('Oluşturulamadı',true)}
+}
+
+function openEditBoardSheet(){
+  const b=getActive();if(!b)return;
+  selEditBoardColor=b.color||COLORS[0];
+  buildCGrid('eBColorGrid','edit');
+  document.getElementById('eBName').value=b.name;
+  openSheet('editBoardSh','editBoardOv');
+  setTimeout(()=>document.getElementById('eBName').focus(),350);
+}
+
+async function saveEditBoard(){
+  const name=document.getElementById('eBName').value.trim();
+  if(!name)return;
+  const b=getActive();if(!b)return;
+  closeSheet('editBoardSh','editBoardOv');
+  try{
+    await sbFetch('boards?id=eq.'+b.id,{method:'PATCH',body:JSON.stringify({name,color:selEditBoardColor})});
+    await loadAll();toast('Board güncellendi');
+  }catch(e){toast('Güncellenemedi',true)}
+}
+
+async function deleteBoard(){
+  const b=getActive();if(!b)return;
+  if(!confirm(`"${b.name}" board ve tüm içeriği silinsin mi?`))return;
+  closeSheet('editBoardSh','editBoardOv');
+  try{
+    await sbFetch('boards?id=eq.'+b.id,{method:'DELETE'});
+    activeBoardId=null;
+    await loadAll();toast('Board silindi');
+  }catch(e){toast('Silinemedi',true)}
 }
 
 async function saveCol(){
@@ -679,14 +701,16 @@ async function saveCol(){
 
 function buildCGrid(gridId,mode){
   const g=document.getElementById(gridId);g.innerHTML='';
+  const sel=mode==='new'?selNewBoardColor:mode==='edit'?selEditBoardColor:selColColor;
   COLORS.forEach(c=>{
     const d=document.createElement('div');
-    const sel=mode==='board'?selBoardColor:selColColor;
     d.className='cdot'+(c===sel?' on':'');
     d.style.background=c;
     d.innerHTML='<span class="ti ti-check"></span>';
     d.onclick=()=>{
-      if(mode==='board')selBoardColor=c;else selColColor=c;
+      if(mode==='new')selNewBoardColor=c;
+      else if(mode==='edit')selEditBoardColor=c;
+      else selColColor=c;
       buildCGrid(gridId,mode);
     };
     g.appendChild(d);
@@ -703,7 +727,7 @@ function closeSheet(sid,oid){
   document.getElementById(oid).classList.remove('on');
 }
 
-['cardSh','boardSh','colSh'].forEach(id=>{
+['cardSh','newBoardSh','editBoardSh','colSh'].forEach(id=>{
   const el=document.getElementById(id);
   let sy=0;
   el.addEventListener('touchstart',e=>{sy=e.touches[0].clientY},{passive:true});
@@ -715,14 +739,20 @@ function closeSheet(sid,oid){
   el.addEventListener('touchend',e=>{
     const dy=e.changedTouches[0].clientY-sy;
     el.style.transform='';
-    if(dy>90){const m={cardSh:'cardOv',boardSh:'boardOv',colSh:'colOv'};closeSheet(id,m[id])}
+    if(dy>90){
+      const m={cardSh:'cardOv',newBoardSh:'newBoardOv',editBoardSh:'editBoardOv',colSh:'colOv'};
+      closeSheet(id,m[id]);
+    }
   },{passive:true});
 });
 
 function setSeg(segId,val){
   document.querySelectorAll(`#${segId} .seg-b`).forEach(b=>{
     b.classList.toggle('on',b.dataset.v===val);
-    b.onclick=()=>{document.querySelectorAll(`#${segId} .seg-b`).forEach(x=>x.classList.remove('on'));b.classList.add('on')};
+    b.onclick=()=>{
+      document.querySelectorAll(`#${segId} .seg-b`).forEach(x=>x.classList.remove('on'));
+      b.classList.add('on');
+    };
   });
 }
 function getSegVal(segId){return document.querySelector(`#${segId} .seg-b.on`)?.dataset.v||''}
@@ -730,9 +760,10 @@ function getSegVal(segId){return document.querySelector(`#${segId} .seg-b.on`)?.
 let toastTimer=null;
 function toast(msg,err=false){
   const t=document.getElementById('toast');
-  t.textContent=msg;t.style.background=err?'rgba(240,92,106,.2)':'var(--s3)';
+  t.textContent=msg;
+  t.style.background=err?'rgba(240,92,106,.25)':'var(--s3)';
   t.classList.add('show');clearTimeout(toastTimer);
-  toastTimer=setTimeout(()=>t.classList.remove('show'),2500);
+  toastTimer=setTimeout(()=>t.classList.remove('show'),2800);
 }
 
 function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
