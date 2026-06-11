@@ -338,7 +338,7 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--txt);
   </div>
 </div>
 
-<!-- COL SHEET -->
+<!-- NEW COL SHEET -->
 <div class="sh-ov" id="colOv" onclick="closeSheet('colSh','colOv')"></div>
 <div class="sheet" id="colSh">
   <div class="sh-handle"></div>
@@ -353,6 +353,25 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--txt);
   <div class="sh-acts">
     <button class="sh-btn cancel" onclick="closeSheet('colSh','colOv')">İptal</button>
     <button class="sh-btn ok" onclick="saveCol()">Ekle</button>
+  </div>
+</div>
+
+<!-- EDIT COL SHEET -->
+<div class="sh-ov" id="editColOv" onclick="closeSheet('editColSh','editColOv')"></div>
+<div class="sheet" id="editColSh">
+  <div class="sh-handle"></div>
+  <div class="sh-title">
+    <span>Kolonu Düzenle</span>
+    <button class="sh-close" onclick="closeSheet('editColSh','editColOv')"><span class="ti ti-x"></span></button>
+  </div>
+  <div class="sh-body">
+    <div class="f"><label>Ad</label><input id="eColNm" type="text" placeholder="Kolon adı..."/></div>
+    <div class="f"><label>Renk</label><div class="cgrid" id="eColColorGrid"></div></div>
+  </div>
+  <div class="sh-acts">
+    <button class="sh-btn del" onclick="deleteCol()"><span class="ti ti-trash"></span></button>
+    <button class="sh-btn cancel" onclick="closeSheet('editColSh','editColOv')">İptal</button>
+    <button class="sh-btn ok" onclick="saveEditCol()">Kaydet</button>
   </div>
 </div>
 
@@ -482,10 +501,10 @@ function makeCol(board,col){
   hd.className='col-hd';
   hd.innerHTML=`
     <span class="col-dot" style="background:${col.color}"></span>
-    <span class="col-nm">${esc(col.name)}</span>
+    <span class="col-nm" style="cursor:pointer" onclick="openEditColSheet('${col.id}')">${esc(col.name)}</span>
     <span class="col-ct">${col.cards.length}</span>
-    <button class="col-del" onclick="delCol('${col.id}')" aria-label="Kolonu sil">
-      <span class="ti ti-x"></span>
+    <button class="col-del" onclick="openEditColSheet('${col.id}')" aria-label="Kolonu düzenle">
+      <span class="ti ti-pencil"></span>
     </button>`;
   const bar=document.createElement('div');
   bar.className='col-bar';
@@ -622,11 +641,38 @@ async function deleteCard(){
   }catch(e){toast('Silinemedi',true)}
 }
 
-async function delCol(colId){
-  if(!confirm('Bu kolonu ve tüm kartlarını silmek istiyor musunuz?'))return;
+let editingColId=null;
+let selEditColColor=COLORS[0];
+
+function openEditColSheet(colId){
+  const b=getActive();
+  const col=b.cols.find(c=>c.id===colId);
+  if(!col)return;
+  editingColId=colId;
+  selEditColColor=col.color||COLORS[0];
+  document.getElementById('eColNm').value=col.name;
+  buildCGrid('eColColorGrid','editcol');
+  document.getElementById('editColOv').classList.add('on');
+  document.getElementById('editColSh').classList.add('on');
+  setTimeout(()=>document.getElementById('eColNm').focus(),350);
+}
+
+async function saveEditCol(){
+  const name=document.getElementById('eColNm').value.trim();
+  if(!name)return;
+  closeSheet('editColSh','editColOv');
   try{
-    await sbFetch('columns?id=eq.'+colId,{method:'DELETE'});
-    await loadAll();
+    await sbFetch('columns?id=eq.'+editingColId,{method:'PATCH',body:JSON.stringify({name,color:selEditColColor})});
+    await loadAll();toast('Kolon güncellendi');
+  }catch(e){toast('Güncellenemedi',true)}
+}
+
+async function deleteCol(){
+  if(!confirm('Bu kolonu ve tüm kartlarını silmek istiyor musunuz?'))return;
+  closeSheet('editColSh','editColOv');
+  try{
+    await sbFetch('columns?id=eq.'+editingColId,{method:'DELETE'});
+    await loadAll();toast('Kolon silindi');
   }catch(e){toast('Silinemedi',true)}
 }
 
@@ -701,7 +747,7 @@ async function saveCol(){
 
 function buildCGrid(gridId,mode){
   const g=document.getElementById(gridId);g.innerHTML='';
-  const sel=mode==='new'?selNewBoardColor:mode==='edit'?selEditBoardColor:selColColor;
+  const sel=mode==='new'?selNewBoardColor:mode==='edit'?selEditBoardColor:mode==='editcol'?selEditColColor:selColColor;
   COLORS.forEach(c=>{
     const d=document.createElement('div');
     d.className='cdot'+(c===sel?' on':'');
@@ -710,6 +756,7 @@ function buildCGrid(gridId,mode){
     d.onclick=()=>{
       if(mode==='new')selNewBoardColor=c;
       else if(mode==='edit')selEditBoardColor=c;
+      else if(mode==='editcol')selEditColColor=c;
       else selColColor=c;
       buildCGrid(gridId,mode);
     };
@@ -727,7 +774,7 @@ function closeSheet(sid,oid){
   document.getElementById(oid).classList.remove('on');
 }
 
-['cardSh','newBoardSh','editBoardSh','colSh'].forEach(id=>{
+['cardSh','newBoardSh','editBoardSh','colSh','editColSh'].forEach(id=>{
   const el=document.getElementById(id);
   let sy=0;
   el.addEventListener('touchstart',e=>{sy=e.touches[0].clientY},{passive:true});
@@ -740,7 +787,7 @@ function closeSheet(sid,oid){
     const dy=e.changedTouches[0].clientY-sy;
     el.style.transform='';
     if(dy>90){
-      const m={cardSh:'cardOv',newBoardSh:'newBoardOv',editBoardSh:'editBoardOv',colSh:'colOv'};
+      const m={cardSh:'cardOv',newBoardSh:'newBoardOv',editBoardSh:'editBoardOv',colSh:'colOv',editColSh:'editColOv'};
       closeSheet(id,m[id]);
     }
   },{passive:true});
