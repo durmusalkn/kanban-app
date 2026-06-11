@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="Kanban"/>
+<meta name="theme-color" content="#0d0d14"/>
+<link rel="manifest" href="manifest.json"/>
+<link rel="apple-touch-icon" href="icon-180.png"/>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css"/>
+<title>Kanban</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{
+  --bg:#0d0d14;--s1:#16161f;--s2:#1e1e2a;--s3:#252535;
+  --b1:rgba(255,255,255,0.07);--b2:rgba(255,255,255,0.13);--b3:rgba(255,255,255,0.20);
+  --txt:#f0f0f8;--muted:#7878a0;
+  --accent:#7c5cfc;--danger:#f05c6a;--ok:#3ecf8e;--warn:#f0a742;
+  --safe-top:env(safe-area-inset-top,44px);
+  --safe-bot:env(safe-area-inset-bottom,34px);
+  --tb:56px;--bn:56px;--tabs:46px
+}
+html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--txt);
+  font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text',sans-serif;
+  -webkit-font-smoothing:antialiased}
+
+/* TOPBAR */
+.topbar{position:fixed;top:0;left:0;right:0;z-index:60;
+  padding-top:var(--safe-top);
+  background:rgba(13,13,20,0.96);
+  border-bottom:.5px solid var(--b1)}
+.tb-inner{display:flex;align-items:center;gap:10px;padding:10px 16px;height:var(--tb)}
+.tb-logo{width:32px;height:32px;border-radius:9px;background:var(--accent);
+  display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.tb-logo .ti{font-size:17px;color:#fff}
+.tb-title{font-size:17px;font-weight:700;letter-spacing:-.5px;flex:1;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tb-btn{width:36px;height:36px;border-radius:10px;border:none;
+  background:var(--s2);color:var(--txt);
+  display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0}
+.tb-btn .ti{font-size:19px}
+.tb-btn.accent{background:var(--accent);color:#fff}
+
+/* BOARD TABS */
+.tabs-wrap{position:fixed;z-index:59;left:0;right:0;
+  top:calc(var(--safe-top) + var(--tb));height:var(--tabs);
+  background:rgba(13,13,20,0.93);border-bottom:.5px solid var(--b1);
+  overflow-x:auto;overflow-y:hidden;display:flex;align-items:center;
+  gap:6px;padding:0 16px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.tabs-wrap::-webkit-scrollbar{display:none}
+.tab{display:flex;align-items:center;gap:6px;padding:6px 12px;border-radius:20px;
+  font-size:13px;font-weight:600;white-space:nowrap;cursor:pointer;
+  color:var(--muted);border:.5px solid transparent;flex-shrink:0;transition:all .15s}
+.tab.active{color:var(--txt);background:var(--s2);border-color:var(--b2)}
+.tab .dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.add-tab{display:flex;align-items:center;gap:5px;padding:6px 12px;border-radius:20px;
+  font-size:13px;font-weight:600;white-space:nowrap;cursor:pointer;
+  color:var(--muted);border:.5px dashed var(--b2);flex-shrink:0;
+  background:transparent;font-family:inherit}
+
+/* MAIN */
+.main{position:fixed;left:0;right:0;
+  top:calc(var(--safe-top) + var(--tb) + var(--tabs));
+  bottom:calc(var(--bn) + var(--safe-bot));
+  overflow-x:auto;overflow-y:hidden;
+  display:flex;align-items:flex-start;gap:12px;padding:14px 16px;
+  -webkit-overflow-scrolling:touch;scrollbar-width:none}
+.main::-webkit-scrollbar{display:none}
+
+/* COLUMNS */
+.col{display:flex;flex-direction:column;width:248px;flex-shrink:0;
+  border-radius:14px;overflow:hidden;background:var(--s1)}
+.col-hd{display:flex;align-items:center;gap:8px;padding:11px 12px;background:var(--s2)}
+.col-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+.col-nm{font-size:13px;font-weight:700;flex:1;letter-spacing:-.2px}
+.col-ct{font-size:11px;color:var(--muted);background:var(--s3);border-radius:5px;
+  padding:2px 7px;font-weight:600}
+.col-del{width:24px;height:24px;border-radius:6px;border:none;
+  background:transparent;color:var(--muted);cursor:pointer;
+  display:flex;align-items:center;justify-content:center}
+.col-del .ti{font-size:15px}
+.col-del:active{background:rgba(240,92,106,.15);color:var(--danger)}
+.col-bar{height:2px;flex-shrink:0}
+.col-body{display:flex;flex-direction:column;gap:8px;padding:10px;
+  overflow-y:auto;-webkit-overflow-scrolling:touch;
+  min-height:80px;max-height:calc(100vh - 280px);scrollbar-width:none}
+.col-body::-webkit-scrollbar{display:none}
+.col-body.drag-over{background:rgba(124,92,252,.07)}
+
+/* CARDS */
+.card{background:var(--s2);border:.5px solid var(--b1);border-radius:11px;
+  padding:11px;cursor:pointer;position:relative;
+  -webkit-user-select:none;user-select:none;transition:transform .1s,opacity .1s}
+.card:active{transform:scale(.97);opacity:.85}
+.card.dragging{opacity:.3;transform:scale(.95)}
+.card-row{display:flex;align-items:flex-start;gap:8px}
+.card-main{flex:1;min-width:0}
+.card-edit-btn{width:28px;height:28px;border-radius:7px;border:none;
+  background:transparent;color:var(--muted);cursor:pointer;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;margin-top:-2px}
+.card-edit-btn .ti{font-size:16px}
+.card-edit-btn:active{background:var(--s3);color:var(--txt)}
+.tag-pill{display:inline-flex;align-items:center;font-size:10px;font-weight:700;
+  padding:2px 7px;border-radius:4px;margin-bottom:6px;
+  letter-spacing:.4px;text-transform:uppercase}
+.card-title{font-size:13px;font-weight:500;line-height:1.4;margin-bottom:8px}
+.card-meta{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.av{width:20px;height:20px;border-radius:50%;display:flex;align-items:center;
+  justify-content:center;font-size:8px;font-weight:800;flex-shrink:0}
+.card-date{font-size:11px;color:var(--muted);display:flex;align-items:center;gap:3px}
+.card-date .ti{font-size:12px}
+.pri-pill{font-size:10px;font-weight:700;display:flex;align-items:center;
+  gap:3px;padding:2px 6px;border-radius:4px}
+.pri-pill .ti{font-size:11px}
+
+.add-card-btn{display:flex;align-items:center;gap:6px;padding:9px 11px;
+  border-radius:9px;border:.5px dashed var(--b2);background:transparent;
+  color:var(--muted);font-size:12px;font-weight:600;cursor:pointer;
+  width:100%;font-family:inherit}
+.add-card-btn .ti{font-size:15px}
+.add-card-btn:active{border-color:var(--accent);color:var(--accent);background:rgba(124,92,252,.07)}
+
+.add-col-ghost{display:flex;flex-direction:column;align-items:center;
+  justify-content:center;gap:8px;width:190px;flex-shrink:0;min-height:130px;
+  border-radius:14px;border:1.5px dashed var(--b2);background:transparent;
+  color:var(--muted);font-size:13px;font-weight:600;cursor:pointer;
+  font-family:inherit;align-self:stretch}
+.add-col-ghost .ti{font-size:28px}
+.add-col-ghost:active{border-color:var(--accent);color:var(--accent)}
+
+/* BOTTOM NAV */
+.bnav{position:fixed;bottom:0;left:0;right:0;z-index:60;
+  padding-bottom:var(--safe-bot);
+  background:rgba(13,13,20,0.96);border-top:.5px solid var(--b1);
+  display:flex;align-items:flex-start;justify-content:space-around;padding-top:8px}
+.nav-it{display:flex;flex-direction:column;align-items:center;gap:3px;
+  cursor:pointer;padding:4px 24px;color:var(--muted);
+  font-size:10px;font-weight:600;letter-spacing:.2px}
+.nav-it .ti{font-size:23px}
+.nav-it.on{color:var(--accent)}
+
+/* TOAST */
+.toast{position:fixed;bottom:calc(var(--bn) + var(--safe-bot) + 12px);left:50%;
+  transform:translateX(-50%) translateY(8px);
+  background:var(--s3);border:.5px solid var(--b2);border-radius:10px;
+  padding:10px 16px;font-size:13px;font-weight:600;white-space:nowrap;
+  opacity:0;transition:opacity .2s,transform .2s;pointer-events:none;z-index:200}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* SETUP SCREEN */
+.setup-screen{position:fixed;inset:0;background:var(--bg);z-index:300;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:32px 24px}
+.setup-logo{width:64px;height:64px;border-radius:18px;background:var(--accent);
+  display:flex;align-items:center;justify-content:center;margin-bottom:20px}
+.setup-logo .ti{font-size:34px;color:#fff}
+.setup-screen h1{font-size:24px;font-weight:700;letter-spacing:-.5px;margin-bottom:6px;text-align:center}
+.setup-screen p{font-size:14px;color:var(--muted);text-align:center;margin-bottom:28px;line-height:1.5}
+.setup-field{width:100%;max-width:380px;margin-bottom:14px}
+.setup-field label{display:block;font-size:12px;font-weight:600;color:var(--muted);
+  letter-spacing:.3px;text-transform:uppercase;margin-bottom:7px}
+.setup-field input{width:100%;padding:14px;border-radius:12px;
+  background:var(--s2);border:.5px solid var(--b2);color:var(--txt);
+  font-size:14px;outline:none;font-family:inherit}
+.setup-field input:focus{border-color:var(--accent)}
+.setup-btn{width:100%;max-width:380px;padding:15px;border-radius:12px;
+  background:var(--accent);color:#fff;font-size:16px;font-weight:700;
+  border:none;cursor:pointer;font-family:inherit;margin-top:4px}
+.setup-btn:active{opacity:.85}
+.setup-err{color:var(--danger);font-size:13px;text-align:center;margin-top:10px;min-height:20px}
+
+/* SHEET */
+.sh-ov{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:100;
+  opacity:0;pointer-events:none;transition:opacity .25s}
+.sh-ov.on{opacity:1;pointer-events:all}
+.sheet{position:fixed;left:0;right:0;bottom:0;z-index:101;
+  background:var(--s2);border-radius:20px 20px 0 0;
+  padding-bottom:calc(16px + var(--safe-bot));
+  transform:translateY(102%);transition:transform .3s cubic-bezier(.32,.72,0,1);
+  max-height:94vh;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.sheet.on{transform:translateY(0)}
+.sh-handle{width:36px;height:4px;border-radius:2px;
+  background:var(--b2);margin:12px auto 0}
+.sh-title{font-size:17px;font-weight:700;padding:16px 20px 4px;letter-spacing:-.4px;
+  display:flex;align-items:center;justify-content:space-between}
+.sh-close{width:28px;height:28px;border-radius:50%;border:none;
+  background:var(--s3);color:var(--muted);cursor:pointer;
+  display:flex;align-items:center;justify-content:center}
+.sh-close .ti{font-size:16px}
+.sh-body{padding:12px 20px 0}
+.f{margin-bottom:14px}
+.f label{display:block;font-size:12px;color:var(--muted);font-weight:600;
+  margin-bottom:7px;letter-spacing:.3px;text-transform:uppercase}
+.f input,.f select,.f textarea{width:100%;padding:13px 14px;
+  background:var(--s3);border:.5px solid var(--b2);border-radius:11px;
+  color:var(--txt);font-size:15px;outline:none;font-family:inherit;-webkit-appearance:none}
+.f input:focus,.f select:focus,.f textarea:focus{border-color:var(--accent)}
+.f select option{background:var(--s2)}
+.f textarea{resize:none;min-height:72px;line-height:1.4}
+.seg{display:flex;background:var(--s3);border-radius:9px;padding:2px;gap:2px}
+.seg-b{flex:1;padding:8px 4px;border-radius:7px;border:none;background:transparent;
+  color:var(--muted);font-size:13px;font-weight:600;cursor:pointer;
+  font-family:inherit;text-align:center;transition:all .15s}
+.seg-b.on{background:var(--s2);color:var(--txt)}
+.cgrid{display:flex;gap:10px;flex-wrap:wrap;padding:4px 0}
+.cdot{width:32px;height:32px;border-radius:50%;cursor:pointer;
+  border:2.5px solid transparent;display:flex;align-items:center;justify-content:center}
+.cdot.on{border-color:#fff;transform:scale(1.1)}
+.cdot .ti{font-size:14px;color:#fff;opacity:0}
+.cdot.on .ti{opacity:1}
+.sh-acts{display:flex;gap:10px;padding:16px 20px 0}
+.sh-btn{flex:1;padding:14px;border-radius:12px;border:none;
+  font-size:15px;font-weight:700;cursor:pointer;font-family:inherit}
+.sh-btn.cancel{background:var(--s3);color:var(--muted)}
+.sh-btn.ok{background:var(--accent);color:#fff}
+.sh-btn.del{background:rgba(240,92,106,.15);color:var(--danger)}
+.sh-btn:active{transform:scale(.97)}
+
+/* LOADING */
+.loader{position:fixed;inset:0;background:var(--bg);z-index:400;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px}
+.loader .ti{font-size:40px;color:var(--accent)}
+.loader p{font-size:14px;color:var(--muted);font-weight:500}
+@keyframes spin{to{transform:rotate(360deg)}}
+.spin{animation:spin 1s linear infinite;display:inline-block}
+</style>
+</head>
+<body>
+
+<!-- LOADER -->
+<div class="loader" id="loader">
+  <span class="ti ti-loader spin"></span>
+  <p>Yükleniyor...</p>
+</div>
+
+<!-- SETUP -->
+<div class="setup-screen" id="setupScreen" style="display:none">
+  <div class="setup-logo"><span class="ti ti-layout-kanban"></span></div>
+  <h1>Kanban'a Hoş Geldiniz</h1>
+  <p>Verileri bulutta saklamak için<br/>Supabase bilgilerinizi girin</p>
+  <div class="setup-field">
+    <label>Project URL</label>
+    <input id="sbUrl" type="url" placeholder="https://xxxx.supabase.co"/>
+  </div>
+  <div class="setup-field">
+    <label>Anon Key</label>
+    <input id="sbKey" type="text" placeholder="eyJhbGci..."/>
+  </div>
+  <button class="setup-btn" onclick="connectSupabase()">Bağlan</button>
+  <div class="setup-err" id="setupErr"></div>
+</div>
+
+<!-- APP -->
+<div id="app" style="display:none">
+  <div class="topbar">
+    <div class="tb-inner">
+      <div class="tb-logo"><span class="ti ti-layout-kanban"></span></div>
+      <span class="tb-title" id="tbTitle">Kanban</span>
+      <button class="tb-btn accent" onclick="openCardSheet(null,null)" aria-label="Kart ekle">
+        <span class="ti ti-plus"></span>
+      </button>
+    </div>
+  </div>
+  <div class="tabs-wrap" id="tabsWrap"></div>
+  <div class="main" id="mainArea"></div>
+  <div class="bnav">
+    <div class="nav-it on"><span class="ti ti-layout-kanban"></span>Board</div>
+    <div class="nav-it" onclick="openBoardSheet()"><span class="ti ti-circle-plus"></span>Board</div>
+    <div class="nav-it" onclick="openCardSheet(null,null)"><span class="ti ti-square-plus"></span>Kart</div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- SHEETS -->
+<div class="sh-ov" id="cardOv" onclick="closeSheet('cardSh','cardOv')"></div>
+<div class="sheet" id="cardSh">
+  <div class="sh-handle"></div>
+  <div class="sh-title">
+    <span id="cardShTitle">Yeni Kart</span>
+    <button class="sh-close" onclick="closeSheet('cardSh','cardOv')"><span class="ti ti-x"></span></button>
+  </div>
+  <div class="sh-body">
+    <div class="f"><label>Başlık</label><input id="cTitle" type="text" placeholder="Kart başlığı..."/></div>
+    <div class="f"><label>Açıklama (opsiyonel)</label><textarea id="cDesc" placeholder="Detaylar..."></textarea></div>
+    <div class="f"><label>Etiket</label>
+      <div class="seg" id="tagSeg">
+        <button class="seg-b on" data-v="feature">Feature</button>
+        <button class="seg-b" data-v="bug">Bug</button>
+        <button class="seg-b" data-v="design">Design</button>
+        <button class="seg-b" data-v="task">Task</button>
+      </div>
+    </div>
+    <div class="f"><label>Öncelik</label>
+      <div class="seg" id="priSeg">
+        <button class="seg-b" data-v="low">Düşük</button>
+        <button class="seg-b on" data-v="medium">Orta</button>
+        <button class="seg-b" data-v="high">Yüksek</button>
+      </div>
+    </div>
+    <div class="f"><label>Son Tarih</label><input id="cDate" type="date"/></div>
+    <div class="f"><label>Kolon</label><select id="cCol"></select></div>
+  </div>
+  <div class="sh-acts">
+    <button class="sh-btn del" id="cardDelBtn" onclick="deleteCard()" style="display:none">
+      <span class="ti ti-trash"></span> Sil
+    </button>
+    <button class="sh-btn cancel" onclick="closeSheet('cardSh','cardOv')">İptal</button>
+    <button class="sh-btn ok" onclick="saveCard()">Kaydet</button>
+  </div>
+</div>
+
+<div class="sh-ov" id="boardOv" onclick="closeSheet('boardSh','boardOv')"></div>
+<div class="sheet" id="boardSh">
+  <div class="sh-handle"></div>
+  <div class="sh-title">
+    <span>Yeni Board</span>
+    <button class="sh-close" onclick="closeSheet('boardSh','boardOv')"><span class="ti ti-x"></span></button>
+  </div>
+  <div class="sh-body">
+    <div class="f"><label>Ad</label><input id="bName" type="text" placeholder="Board adı..."/></div>
+    <div class="f"><label>Renk</label><div class="cgrid" id="bColorGrid"></div></div>
+  </div>
+  <div class="sh-acts">
+    <button class="sh-btn cancel" onclick="closeSheet('boardSh','boardOv')">İptal</button>
+    <button class="sh-btn ok" onclick="saveBoard()">Oluştur</button>
+  </div>
+</div>
+
+<div class="sh-ov" id="colOv" onclick="closeSheet('colSh','colOv')"></div>
+<div class="sheet" id="colSh">
+  <div class="sh-handle"></div>
+  <div class="sh-title">
+    <span>Yeni Kolon</span>
+    <button class="sh-close" onclick="closeSheet('colSh','colOv')"><span class="ti ti-x"></span></button>
+  </div>
+  <div class="sh-body">
+    <div class="f"><label>Ad</label><input id="colNm" type="text" placeholder="Kolon adı..."/></div>
+    <div class="f"><label>Renk</label><div class="cgrid" id="colColorGrid"></div></div>
+  </div>
+  <div class="sh-acts">
+    <button class="sh-btn cancel" onclick="closeSheet('colSh','colOv')">İptal</button>
+    <button class="sh-btn ok" onclick="saveCol()">Ekle</button>
+  </div>
+</div>
+
+<script>
+const COLORS=['#7c5cfc','#06c2b8','#f05c6a','#f0a742','#3ecf8e','#4f9cf9','#e06cfc','#f07842','#a78bfa','#34d399'];
+const TAGS={
+  feature:{bg:'rgba(124,92,252,.18)',c:'#a78bfa'},
+  bug:{bg:'rgba(240,92,106,.18)',c:'#f87171'},
+  design:{bg:'rgba(6,194,184,.18)',c:'#2dd4bf'},
+  research:{bg:'rgba(240,167,66,.18)',c:'#fbbf24'},
+  task:{bg:'rgba(62,207,142,.18)',c:'#34d399'}
+};
+const PRI={
+  low:{l:'Düşük',bg:'rgba(120,120,160,.18)',c:'#9090b8'},
+  medium:{l:'Orta',bg:'rgba(240,167,66,.18)',c:'#fbbf24'},
+  high:{l:'Yüksek',bg:'rgba(240,92,106,.18)',c:'#f87171'}
+};
+const AV_C=['#7c5cfc','#06c2b8','#f05c6a','#f0a742','#3ecf8e','#4f9cf9'];
+const AV_I=['AY','KM','BS','ÖD','EK','ZY'];
+
+let SB_URL='',SB_KEY='';
+let boards=[],activeBoardId=null;
+let selBoardColor=COLORS[0],selColColor=COLORS[0];
+let editingCardId=null,editingColId=null;
+let dragCardId=null,dragFromColId=null;
+
+function sbFetch(path,opts={}){
+  return fetch(SB_URL+'/rest/v1/'+path,{
+    ...opts,
+    headers:{
+      'apikey':SB_KEY,
+      'Authorization':'Bearer '+SB_KEY,
+      'Content-Type':'application/json',
+      'Prefer':'return=representation',
+      ...(opts.headers||{})
+    }
+  });
+}
+
+async function connectSupabase(){
+  const url=document.getElementById('sbUrl').value.trim().replace(/\/$/,'');
+  const key=document.getElementById('sbKey').value.trim();
+  const err=document.getElementById('setupErr');
+  err.textContent='';
+  if(!url||!key){err.textContent='Lütfen her iki alanı da doldurun.';return}
+  document.querySelector('.setup-btn').textContent='Bağlanıyor...';
+  try{
+    const r=await fetch(url+'/rest/v1/boards?select=id&limit=1',{
+      headers:{'apikey':key,'Authorization':'Bearer '+key}
+    });
+    if(!r.ok)throw new Error('Bağlantı hatası: '+r.status);
+    SB_URL=url;SB_KEY=key;
+    localStorage.setItem('kb_url',url);localStorage.setItem('kb_key',key);
+    showApp();
+  }catch(e){
+    err.textContent=e.message||'Bağlanamadı. URL ve key\'i kontrol edin.';
+    document.querySelector('.setup-btn').textContent='Bağlan';
+  }
+}
+
+async function showApp(){
+  document.getElementById('setupScreen').style.display='none';
+  document.getElementById('app').style.display='block';
+  document.getElementById('loader').style.display='flex';
+  await loadAll();
+  document.getElementById('loader').style.display='none';
+}
+
+async function loadAll(){
+  try{
+    const br=await sbFetch('boards?select=*,columns(*,cards(*))&order=position');
+    if(!br.ok)throw new Error();
+    const data=await br.json();
+    boards=data.map(b=>({
+      ...b,
+      cols:(b.columns||[]).sort((a,b2)=>a.position-b2.position).map(c=>({
+        ...c,
+        cards:(c.cards||[]).sort((a,b2)=>a.position-b2.position)
+      }))
+    }));
+    if(!activeBoardId||!boards.find(b=>b.id===activeBoardId)){
+      activeBoardId=boards[0]?.id||null;
+    }
+    render();
+  }catch(e){toast('Veri yüklenemedi',true)}
+}
+
+function getActive(){return boards.find(b=>b.id===activeBoardId)}
+
+function render(){
+  renderTabs();renderBoard();
+  const b=getActive();
+  document.getElementById('tbTitle').textContent=b?.name||'Kanban';
+}
+
+function renderTabs(){
+  const el=document.getElementById('tabsWrap');
+  el.innerHTML='';
+  boards.forEach(b=>{
+    const t=document.createElement('div');
+    t.className='tab'+(b.id===activeBoardId?' active':'');
+    t.innerHTML=`<span class="dot" style="background:${b.color}"></span>${esc(b.name)}`;
+    t.onclick=()=>{activeBoardId=b.id;render()};
+    t.addEventListener('contextmenu',e=>{
+      e.preventDefault();
+      if(boards.length>1&&confirm(`"${b.name}" board silinsin mi? Tüm veriler silinir.`))
+        delBoard(b.id);
+    });
+    el.appendChild(t);
+  });
+  const a=document.createElement('button');
+  a.className='add-tab';
+  a.innerHTML='<span class="ti ti-plus" style="font-size:14px"></span> Board';
+  a.onclick=openBoardSheet;
+  el.appendChild(a);
+}
+
+function renderBoard(){
+  const area=document.getElementById('mainArea');
+  area.innerHTML='';
+  const b=getActive();
+  if(!b){area.innerHTML='<div style="color:var(--muted);font-size:14px;padding:20px">Board yok</div>';return}
+  b.cols.forEach(c=>area.appendChild(makeCol(b,c)));
+  const ghost=document.createElement('button');
+  ghost.className='add-col-ghost';
+  ghost.innerHTML='<span class="ti ti-plus"></span><span>Kolon Ekle</span>';
+  ghost.onclick=()=>openSheet('colSh','colOv');
+  area.appendChild(ghost);
+}
+
+function makeCol(board,col){
+  const wrap=document.createElement('div');
+  wrap.className='col';
+  const hd=document.createElement('div');
+  hd.className='col-hd';
+  hd.innerHTML=`
+    <span class="col-dot" style="background:${col.color}"></span>
+    <span class="col-nm">${esc(col.name)}</span>
+    <span class="col-ct">${col.cards.length}</span>
+    <button class="col-del" onclick="delCol('${col.id}')" aria-label="Kolonu sil">
+      <span class="ti ti-x"></span>
+    </button>`;
+  const bar=document.createElement('div');
+  bar.className='col-bar';
+  bar.style.background=col.color;bar.style.opacity='.45';
+  const body=document.createElement('div');
+  body.className='col-body';
+  body.dataset.cid=col.id;
+  body.addEventListener('dragover',e=>{e.preventDefault();body.classList.add('drag-over')});
+  body.addEventListener('dragleave',e=>{if(!body.contains(e.relatedTarget))body.classList.remove('drag-over')});
+  body.addEventListener('drop',e=>{e.preventDefault();body.classList.remove('drag-over');dropCard(col.id)});
+  col.cards.forEach(card=>body.appendChild(makeCard(card,col.id)));
+  const addBtn=document.createElement('button');
+  addBtn.className='add-card-btn';
+  addBtn.innerHTML='<span class="ti ti-plus"></span> Kart ekle';
+  addBtn.onclick=()=>openCardSheet(null,col.id);
+  body.appendChild(addBtn);
+  wrap.append(hd,bar,body);
+  return wrap;
+}
+
+function makeCard(card,colId){
+  const div=document.createElement('div');
+  div.className='card';
+  div.draggable=true;
+  div.addEventListener('dragstart',()=>{dragCardId=card.id;dragFromColId=colId;setTimeout(()=>div.classList.add('dragging'),0)});
+  div.addEventListener('dragend',()=>div.classList.remove('dragging'));
+  let pt=null;
+  div.addEventListener('touchstart',()=>{pt=setTimeout(()=>{pt=null;openCardSheet(card,colId)},500)},{passive:true});
+  div.addEventListener('touchend',()=>{if(pt){clearTimeout(pt);pt=null;openCardSheet(card,colId)}},{passive:true});
+  div.addEventListener('touchmove',()=>{clearTimeout(pt);pt=null},{passive:true});
+  div.addEventListener('click',()=>openCardSheet(card,colId));
+  const ts=TAGS[card.tag]||TAGS.task;
+  const pr=PRI[card.priority]||PRI.medium;
+  const av=((card.avatar_index||0))%AV_C.length;
+  const ds=card.due_date?new Date(card.due_date+'T00:00:00').toLocaleDateString('tr-TR',{day:'numeric',month:'short'}):'';
+  div.innerHTML=`
+    <div class="card-row">
+      <div class="card-main">
+        <span class="tag-pill" style="background:${ts.bg};color:${ts.c}">${card.tag||'task'}</span>
+        <div class="card-title">${esc(card.title)}</div>
+        <div class="card-meta">
+          <div class="av" style="background:${AV_C[av]}22;color:${AV_C[av]}">${AV_I[av]}</div>
+          ${ds?`<span class="card-date"><span class="ti ti-calendar"></span>${ds}</span>`:''}
+          <span class="pri-pill" style="background:${pr.bg};color:${pr.c}">
+            <span class="ti ti-flag-3"></span>${pr.l}
+          </span>
+        </div>
+      </div>
+      <button class="card-edit-btn" aria-label="Düzenle">
+        <span class="ti ti-dots-vertical"></span>
+      </button>
+    </div>`;
+  div.querySelector('.card-edit-btn').onclick=e=>{e.stopPropagation();openCardSheet(card,colId)};
+  return div;
+}
+
+async function dropCard(toColId){
+  if(!dragCardId||!dragFromColId||dragFromColId===toColId)return;
+  const b=getActive();
+  const fc=b.cols.find(c=>c.id===dragFromColId);
+  const tc=b.cols.find(c=>c.id===toColId);
+  if(!fc||!tc)return;
+  const idx=fc.cards.findIndex(c=>c.id===dragCardId);
+  if(idx===-1)return;
+  const[card]=fc.cards.splice(idx,1);
+  card.column_id=toColId;
+  tc.cards.push(card);
+  dragCardId=null;dragFromColId=null;
+  render();
+  try{
+    await sbFetch('cards?id=eq.'+card.id,{
+      method:'PATCH',body:JSON.stringify({column_id:toColId,position:tc.cards.length-1})
+    });
+  }catch(e){toast('Taşıma kaydedilemedi',true);loadAll()}
+}
+
+function openCardSheet(card,colId){
+  editingCardId=card?.id||null;
+  editingColId=colId;
+  document.getElementById('cardShTitle').textContent=card?'Kartı Düzenle':'Yeni Kart';
+  document.getElementById('cTitle').value=card?.title||'';
+  document.getElementById('cDesc').value=card?.description||'';
+  document.getElementById('cDate').value=card?.due_date||'';
+  setSeg('tagSeg',card?.tag||'feature');
+  setSeg('priSeg',card?.priority||'medium');
+  const b=getActive();
+  const colSel=document.getElementById('cCol');
+  colSel.innerHTML='';
+  b.cols.forEach(c=>{
+    const o=document.createElement('option');
+    o.value=c.id;o.textContent=c.name;
+    if(c.id===(colId||card?.column_id))o.selected=true;
+    colSel.appendChild(o);
+  });
+  document.getElementById('cardDelBtn').style.display=card?'flex':'none';
+  openSheet('cardSh','cardOv');
+  setTimeout(()=>document.getElementById('cTitle').focus(),350);
+}
+
+async function saveCard(){
+  const title=document.getElementById('cTitle').value.trim();
+  if(!title)return;
+  const colId=document.getElementById('cCol').value;
+  const payload={
+    title,
+    description:document.getElementById('cDesc').value.trim()||null,
+    tag:getSegVal('tagSeg'),
+    priority:getSegVal('priSeg'),
+    due_date:document.getElementById('cDate').value||null,
+    column_id:colId,
+    updated_at:new Date().toISOString()
+  };
+  closeSheet('cardSh','cardOv');
+  try{
+    if(editingCardId){
+      await sbFetch('cards?id=eq.'+editingCardId,{method:'PATCH',body:JSON.stringify(payload)});
+      toast('Kart güncellendi');
+    }else{
+      const b=getActive();
+      const col=b.cols.find(c=>c.id===colId);
+      payload.position=(col?.cards.length||0);
+      payload.avatar_index=Math.floor(Math.random()*AV_C.length);
+      await sbFetch('cards',{method:'POST',body:JSON.stringify(payload)});
+      toast('Kart eklendi');
+    }
+    await loadAll();
+  }catch(e){toast('Kaydedilemedi',true)}
+}
+
+async function deleteCard(){
+  if(!editingCardId)return;
+  if(!confirm('Bu kartı silmek istediğinize emin misiniz?'))return;
+  closeSheet('cardSh','cardOv');
+  try{
+    await sbFetch('cards?id=eq.'+editingCardId,{method:'DELETE'});
+    toast('Kart silindi');
+    await loadAll();
+  }catch(e){toast('Silinemedi',true)}
+}
+
+async function delCol(colId){
+  if(!confirm('Bu kolonu ve tüm kartlarını silmek istiyor musunuz?'))return;
+  try{
+    await sbFetch('columns?id=eq.'+colId,{method:'DELETE'});
+    await loadAll();
+  }catch(e){toast('Silinemedi',true)}
+}
+
+async function delBoard(id){
+  try{
+    await sbFetch('boards?id=eq.'+id,{method:'DELETE'});
+    if(activeBoardId===id)activeBoardId=null;
+    await loadAll();
+  }catch(e){toast('Silinemedi',true)}
+}
+
+function openBoardSheet(){
+  selBoardColor=COLORS[0];buildCGrid('bColorGrid','board');
+  document.getElementById('bName').value='';
+  openSheet('boardSh','boardOv');
+  setTimeout(()=>document.getElementById('bName').focus(),350);
+}
+
+async function saveBoard(){
+  const name=document.getElementById('bName').value.trim();
+  if(!name)return;
+  closeSheet('boardSh','boardOv');
+  try{
+    const r=await sbFetch('boards',{method:'POST',body:JSON.stringify({name,color:selBoardColor,position:boards.length})});
+    const [nb]=await r.json();
+    const defCols=[
+      {name:'Yapılacak',color:'#7878a0',position:0},
+      {name:'Devam Ediyor',color:'#4f9cf9',position:1},
+      {name:'Tamamlandı',color:'#3ecf8e',position:2}
+    ];
+    for(const c of defCols)await sbFetch('columns',{method:'POST',body:JSON.stringify({...c,board_id:nb.id})});
+    activeBoardId=nb.id;
+    await loadAll();
+    toast('Board oluşturuldu');
+  }catch(e){toast('Oluşturulamadı',true)}
+}
+
+async function saveCol(){
+  const name=document.getElementById('colNm').value.trim();
+  if(!name)return;
+  closeSheet('colSh','colOv');
+  const b=getActive();
+  try{
+    await sbFetch('columns',{method:'POST',body:JSON.stringify({name,color:selColColor,board_id:b.id,position:b.cols.length})});
+    await loadAll();
+  }catch(e){toast('Oluşturulamadı',true)}
+}
+
+function buildCGrid(gridId,mode){
+  const g=document.getElementById(gridId);g.innerHTML='';
+  COLORS.forEach(c=>{
+    const d=document.createElement('div');
+    const sel=mode==='board'?selBoardColor:selColColor;
+    d.className='cdot'+(c===sel?' on':'');
+    d.style.background=c;
+    d.innerHTML='<span class="ti ti-check"></span>';
+    d.onclick=()=>{
+      if(mode==='board')selBoardColor=c;else selColColor=c;
+      buildCGrid(gridId,mode);
+    };
+    g.appendChild(d);
+  });
+}
+
+function openSheet(sid,oid){
+  if(sid==='colSh'){selColColor=COLORS[0];buildCGrid('colColorGrid','col');document.getElementById('colNm').value=''}
+  document.getElementById(oid).classList.add('on');
+  document.getElementById(sid).classList.add('on');
+}
+function closeSheet(sid,oid){
+  document.getElementById(sid).classList.remove('on');
+  document.getElementById(oid).classList.remove('on');
+}
+
+['cardSh','boardSh','colSh'].forEach(id=>{
+  const el=document.getElementById(id);
+  let sy=0;
+  el.addEventListener('touchstart',e=>{sy=e.touches[0].clientY},{passive:true});
+  el.addEventListener('touchmove',e=>{
+    if(el.scrollTop>4)return;
+    const dy=e.touches[0].clientY-sy;
+    if(dy>0)el.style.transform=`translateY(${dy}px)`;
+  },{passive:true});
+  el.addEventListener('touchend',e=>{
+    const dy=e.changedTouches[0].clientY-sy;
+    el.style.transform='';
+    if(dy>90){const m={cardSh:'cardOv',boardSh:'boardOv',colSh:'colOv'};closeSheet(id,m[id])}
+  },{passive:true});
+});
+
+function setSeg(segId,val){
+  document.querySelectorAll(`#${segId} .seg-b`).forEach(b=>{
+    b.classList.toggle('on',b.dataset.v===val);
+    b.onclick=()=>{document.querySelectorAll(`#${segId} .seg-b`).forEach(x=>x.classList.remove('on'));b.classList.add('on')};
+  });
+}
+function getSegVal(segId){return document.querySelector(`#${segId} .seg-b.on`)?.dataset.v||''}
+
+let toastTimer=null;
+function toast(msg,err=false){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.style.background=err?'rgba(240,92,106,.2)':'var(--s3)';
+  t.classList.add('show');clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>t.classList.remove('show'),2500);
+}
+
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+
+async function init(){
+  const url=localStorage.getItem('kb_url');
+  const key=localStorage.getItem('kb_key');
+  if(url&&key){SB_URL=url;SB_KEY=key;await showApp()}
+  else{document.getElementById('loader').style.display='none';document.getElementById('setupScreen').style.display='flex'}
+}
+
+if('serviceWorker' in navigator)navigator.serviceWorker.register('./sw.js').catch(()=>{});
+init();
+</script>
+</body>
+</html>
