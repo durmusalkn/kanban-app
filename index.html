@@ -511,6 +511,7 @@ function makeCol(board,col){
   bar.style.background=col.color;bar.style.opacity='.45';
   const body=document.createElement('div');
   body.className='col-body';
+  body.dataset.cid=col.id;
   body.addEventListener('dragover',e=>{e.preventDefault();body.classList.add('drag-over')});
   body.addEventListener('dragleave',e=>{if(!body.contains(e.relatedTarget))body.classList.remove('drag-over')});
   body.addEventListener('drop',e=>{e.preventDefault();body.classList.remove('drag-over');dropCard(col.id)});
@@ -528,9 +529,70 @@ function makeCard(card,colId){
   const div=document.createElement('div');
   div.className='card';
   div.draggable=true;
+  div.dataset.cardId=card.id;
+  div.dataset.colId=colId;
+
+  // Desktop drag
   div.addEventListener('dragstart',()=>{dragCardId=card.id;dragFromColId=colId;setTimeout(()=>div.classList.add('dragging'),0)});
   div.addEventListener('dragend',()=>div.classList.remove('dragging'));
-  div.addEventListener('click',()=>openCardSheet(card,colId));
+
+  // Touch drag — long press activates, then drag ghost follows finger
+  let pressTimer=null, touchDragging=false, ghost=null, startX=0, startY=0;
+
+  div.addEventListener('touchstart',e=>{
+    const t=e.touches[0];
+    startX=t.clientX;startY=t.clientY;
+    pressTimer=setTimeout(()=>{
+      pressTimer=null;
+      touchDragging=true;
+      dragCardId=card.id;dragFromColId=colId;
+      div.classList.add('dragging');
+      // create ghost
+      ghost=div.cloneNode(true);
+      ghost.style.cssText=`position:fixed;z-index:999;width:${div.offsetWidth}px;opacity:.9;pointer-events:none;transform:scale(1.05);border:1.5px solid var(--accent);left:${div.getBoundingClientRect().left}px;top:${div.getBoundingClientRect().top}px;transition:none`;
+      document.body.appendChild(ghost);
+    },500);
+  },{passive:true});
+
+  div.addEventListener('touchmove',e=>{
+    const t=e.touches[0];
+    const dx=t.clientX-startX, dy=t.clientY-startY;
+    if(!touchDragging){
+      // cancel press if moved too much
+      if(Math.abs(dx)>8||Math.abs(dy)>8){clearTimeout(pressTimer);pressTimer=null}
+      return;
+    }
+    e.preventDefault();
+    if(ghost){ghost.style.left=(t.clientX-div.offsetWidth/2)+'px';ghost.style.top=(t.clientY-40)+'px'}
+    // highlight target col
+    document.querySelectorAll('.col-body').forEach(b=>b.classList.remove('drag-over'));
+    const el=document.elementFromPoint(t.clientX,t.clientY);
+    const targetBody=el?.closest('.col-body');
+    if(targetBody)targetBody.classList.add('drag-over');
+  },{passive:false});
+
+  div.addEventListener('touchend',e=>{
+    clearTimeout(pressTimer);pressTimer=null;
+    if(ghost){ghost.remove();ghost=null}
+    div.classList.remove('dragging');
+    document.querySelectorAll('.col-body').forEach(b=>b.classList.remove('drag-over'));
+    if(!touchDragging){
+      // treat as tap → open card
+      openCardSheet(card,colId);
+    }else{
+      const t=e.changedTouches[0];
+      const el=document.elementFromPoint(t.clientX,t.clientY);
+      const targetBody=el?.closest('.col-body');
+      if(targetBody){
+        const toColId=targetBody.dataset.cid||[...document.querySelectorAll('.col-body')].find(b=>b.contains(targetBody))?.dataset.cid;
+        const resolvedId=targetBody.dataset.cid;
+        if(resolvedId)dropCard(resolvedId);
+      }
+    }
+    touchDragging=false;
+    dragCardId=null;dragFromColId=null;
+  },{passive:true});
+
   const ts=TAGS[card.tag]||TAGS.task;
   const pr=PRI[card.priority]||PRI.medium;
   const av=(card.avatar_index||0)%AV_C.length;
@@ -557,7 +619,8 @@ function makeCard(card,colId){
 }
 
 async function dropCard(toColId){
-  if(!dragCardId||!dragFromColId||dragFromColId===toColId)return;
+  if(!dragCardId||!dragFromColId)return;
+  if(dragFromColId===toColId){dragCardId=null;dragFromColId=null;return}
   const b=getActive();
   const fc=b.cols.find(c=>c.id===dragFromColId);
   const tc=b.cols.find(c=>c.id===toColId);
